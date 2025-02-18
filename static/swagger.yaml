@@ -1,0 +1,116 @@
+openapi: 3.0.0
+info:
+  title: Resume ranker for Job Applications
+  description: The below endpoints ranks resumes based on the provided job description and saves the scores to a CSV file.
+  version: 1.0.0
+paths:
+  /score-resumes:
+    post:
+      summary: Scores resumes based on the given job description and stores the results in a CSV file.
+      description: Upload multiple resumes and specify ranking criteria for scoring. The scores are saved to a CSV file.
+      operationId: scoreResumes
+      requestBody:
+        description: The request contains the criteria and resume files to be ranked.
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                criteria:
+                  type: string
+                  description: JSON string containing the criteria for ranking resumes.
+                file:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: The resume files to be ranked.
+              required:
+                - criteria
+                - file
+      responses:
+        '200':
+          description: Resumes successfully ranked and saved to CSV.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Resumes ranked and saved to CSV.
+        '400':
+          description: Bad request. This could happen for various reasons such as missing criteria or invalid JSON.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: No criteria in request
+        '415':
+          description: Unsupported file type. Only specific file types are supported (e.g., PDF, DOCX).
+        '500':
+          description: Server error during processing.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error while processing resumes.
+  /extract-criteria:
+    post:
+      summary: Extracts criteria from an uploaded document.
+      description: Upload a document (e.g., PDF, DOCX) to extract ranking criteria for resumes.
+      operationId: extractCriteria
+      requestBody:
+        description: The document file to extract criteria from.
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The document file from which to extract criteria.
+              required:
+                - file
+      responses:
+        '200':
+          description: Criteria successfully extracted from the document.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  criteria:
+                    type: string
+                    description: Extracted criteria from the document.
+        '400':
+          description: Bad request. This could happen for various reasons, such as no file provided or unsupported file format.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: No file found or file type not allowed
+        '415':
+          description: Unsupported file type. Only specific file types are supported (e.g., PDF, DOCX).
+        '500':
+          description: Server error while extracting criteria from the document.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error while processing the document.
